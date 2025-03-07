@@ -13,7 +13,7 @@ class CommentController extends Controller
      * Get all comments.
      */
     public function index1(){
-        return response()->json(Comment::get());
+        return response()->json(Comment::with('user')->get());
     }
     /**
      * Store a new comment.

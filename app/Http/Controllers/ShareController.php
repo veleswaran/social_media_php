@@ -18,7 +18,6 @@ class ShareController extends Controller
             'shared_with' => 'required|exists:users,id|different:user_id',
         ]);
 
-        // Check if the post is already shared with the same user
         $existingShare = Share::where('user_id', Auth::id())
             ->where('post_id', $request->post_id)
             ->where('shared_with', $request->shared_with)

@@ -8,30 +8,42 @@ use Illuminate\Support\Facades\Auth;
 
 class LikeController extends Controller
 {
-   /**
-     * Share a post.
+    /**
+     * Like or Unlike a Post
      */
     public function store(Request $request)
     {
         $request->validate([
             'post_id' => 'required|exists:posts,id',
         ]);
-        $check  = Like::where("post_id",$request->post_id)->get();
-        if($check[0]->user_id != Auth::id()){
-            $share = Like::create([
-                'user_id' => Auth::id(),
-                'post_id' => $request->post_id,
-            ]);
+
+        $existingLike = Like::where('post_id', $request->post_id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if ($existingLike) {
+            $existingLike->delete();
             return response()->json([
                 'status' => 'success',
-                'message' => 'Post shared successfully!',
-                'data' => $share
-            ], 201);
+                'message' => 'Post unliked successfully!',
+            ], 200);
         }
+
+        $like = Like::create([
+            'user_id' => Auth::id(),
+            'post_id' => $request->post_id,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Post liked successfully!',
+            'data' => $like
+        ], 201);
     }
 
+
     /**
-     * Get all shares of a post.
+     * Get all Likes of a post.
      */
     public function index($postId)
     {
@@ -44,25 +56,5 @@ class LikeController extends Controller
         ]);
     }
 
-    /**
-     * Delete a share (if the user is the owner).
-     */
-    public function destroy($id)
-    {
-        $share = Like::findOrFail($id);
-
-        if ($share->user_id !== Auth::id()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized action'
-            ], 403);
-        }
-
-        $share->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Share removed successfully!'
-        ]);
-    }
+   
 }
